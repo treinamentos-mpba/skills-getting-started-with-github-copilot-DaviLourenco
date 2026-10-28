@@ -1,0 +1,110 @@
+from copy import deepcopy
+from urllib.parse import quote
+
+import pytest
+from fastapi.testclient import TestClient
+
+from src import app as app_module
+
+
+INITIAL_ACTIVITIES = deepcopy(app_module.activities)
+client = TestClient(app_module.app)
+
+
+@pytest.fixture(autouse=True)
+def reset_activities():
+    app_module.activities = deepcopy(INITIAL_ACTIVITIES)
+
+
+def activity_url(activity_name):
+    return f"/activities/{quote(activity_name, safe='')}/signup"
+
+
+def test_root_redirects_to_frontend():
+    response = client.get("/", follow_redirects=False)
+
+    assert response.status_code == 307
+    assert response.headers["location"] == "/static/index.html"
+
+
+def test_get_activities_returns_activity_data():
+    response = client.get("/activities")
+
+    assert response.status_code == 200
+    assert "Chess Club" in response.json()
+    assert response.json()["Chess Club"]["participants"] == [
+        "michael@mergington.edu",
+        "daniel@mergington.edu",
+    ]
+
+
+def test_signup_adds_participant_to_activity():
+    activity_name = "Art Club"
+    email = "new.student@example.com"
+
+    response = client.post(activity_url(activity_name), params={"email": email})
+
+    assert response.status_code == 200
+    assert response.json() == {"message": f"Signed up {email} for {activity_name}"}
+    assert email in client.get("/activities").json()[activity_name]["participants"]
+
+
+def test_signup_returns_404_for_unknown_activity():
+    response = client.post(activity_url("Unknown Club"), params={"email": "student@example.com"})
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Activity not found"
+
+
+def test_signup_returns_400_for_invalid_email():
+    response = client.post(activity_url("Art Club"), params={"email": "not-an-email"})
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid email address"
+
+
+def test_signup_returns_400_when_activity_is_full():
+    activity = app_module.activities["Art Club"]
+    activity["participants"] = [f"student{index}@example.com" for index in range(activity["max_participants"])]
+
+    response = client.post(activity_url("Art Club"), params={"email": "new.student@example.com"})
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Activity is full"
+
+
+def test_signup_returns_400_for_duplicate_participant():
+    email = "michael@mergington.edu"
+
+    response = client.post(activity_url("Chess Club"), params={"email": email})
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Student already signed up for this activity"
+
+
+def test_remove_signup_removes_participant_from_activity():
+    activity_name = "Chess Club"
+    email = "michael@mergington.edu"
+
+    response = client.delete(activity_url(activity_name), params={"email": email})
+
+    assert response.status_code == 200
+    assert response.json() == {"message": f"Removed {email} from {activity_name}"}
+    assert email not in client.get("/activities").json()[activity_name]["participants"]
+
+
+def test_remove_signup_returns_404_for_unknown_activity():
+    response = client.delete(activity_url("Unknown Club"), params={"email": "student@example.com"})
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Activity not found"
+
+
+def test_remove_signup_returns_404_for_unregistered_participant():
+    response = client.delete(
+        activity_url("Art Club"),
+        params={"email": "student@example.com"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Student is not signed up for this activity"
