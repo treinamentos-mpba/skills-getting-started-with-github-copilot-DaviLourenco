@@ -4,46 +4,89 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Atividades da Mergington High School</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header>
-      <h1>Mergington High School</h1>
-      <h2>Atividades Extracurriculares</h2>
-      <h4>By Davi Lourenço</h4>
+    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="school-brand" href="#main-content" aria-label="Mergington High School, início">
+          <span class="brand-mark" aria-hidden="true">M</span>
+          <span>Mergington <strong>High School</strong></span>
+        </a>
+        <nav class="primary-nav" aria-label="Navegação principal">
+          <a class="nav-link active" href="#activities-container">Atividades</a>
+          <a class="nav-link" href="#signup-container">Inscrições</a>
+        </nav>
+        <a class="header-cta" href="#signup-container">Encontrar uma atividade <span aria-hidden="true">↗</span></a>
+      </div>
     </header>
 
-    <main>
-      <section id="activities-container">
-        <h3>Atividades Disponíveis</h3>
-        <div id="activities-list">
-          <!-- Activities will be loaded here -->
-          <p>Carregando atividades...</p>
+    <main id="main-content" class="page-shell">
+      <section class="welcome-banner" aria-labelledby="welcome-title">
+        <div class="welcome-copy">
+          <p class="eyebrow"><span></span> VIDA NO CAMPUS</p>
+          <h1 id="welcome-title">Um lugar para descobrir o que te inspira.</h1>
+          <p class="welcome-description">Explore clubes, esportes e atividades. Sua próxima grande ideia pode começar depois da aula.</p>
+        </div>
+        <div class="welcome-art" aria-hidden="true">
+          <div class="art-sun"></div>
+          <div class="art-book"><span></span><span></span><span></span></div>
+          <div class="art-star">✳</div>
+          <div class="art-caption">IDEIAS<br />EM MOVIMENTO</div>
         </div>
       </section>
 
-      <section id="signup-container">
-        <h3>Inscreva-se em uma Atividade</h3>
-        <form id="signup-form">
-          <div class="form-group">
-            <label for="email">E-mail do Estudante:</label>
-            <input type="email" id="email" required placeholder="seu-email@mergington.edu" />
+      <div class="content-grid">
+        <section id="activities-container" class="activities-section" aria-labelledby="activities-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">EXPLORE E PARTICIPE</p>
+              <h2 id="activities-title">Atividades disponíveis</h2>
+            </div>
+            <span class="section-note">Feitas para você</span>
           </div>
-          <div class="form-group">
-            <label for="activity">Selecione a Atividade:</label>
-            <select id="activity" required>
-              <option value="">-- Selecione uma atividade --</option>
-              <!-- Activity options will be loaded here -->
-            </select>
+          <div id="activities-list" class="activities-list">
+            <p class="loading-state">Carregando atividades...</p>
           </div>
-          <button type="submit">Inscrever-se</button>
-        </form>
-        <div id="message" class="hidden"></div>
-      </section>
+        </section>
+
+        <aside id="signup-container" class="signup-panel" aria-labelledby="signup-title">
+          <div class="signup-heading">
+            <span class="signup-icon" aria-hidden="true">+</span>
+            <p class="eyebrow">DÊ O PRÓXIMO PASSO</p>
+            <h2 id="signup-title">Inscreva-se</h2>
+            <p>Escolha uma atividade e venha fazer parte.</p>
+          </div>
+          <form id="signup-form">
+            <div class="form-group">
+              <label for="participantName">Nome do participante</label>
+              <input type="text" id="participantName" required maxlength="50" placeholder="Seu nome" autocomplete="name" />
+            </div>
+            <div class="form-group">
+              <label for="email">E-mail do estudante</label>
+              <input type="email" id="email" required placeholder="voce@mergington.edu" autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label for="activity">Atividade</label>
+              <select id="activity" required>
+                <option value="">Selecione uma atividade</option>
+              </select>
+            </div>
+            <button type="submit">Confirmar inscrição <span aria-hidden="true">→</span></button>
+          </form>
+          <div id="message" class="message hidden" role="status" aria-live="polite"></div>
+          <p class="signup-footnote">Dúvidas? Converse com a equipe da escola.</p>
+        </aside>
+      </div>
     </main>
 
-    <footer>
-      <p>&copy; 2026 Mergington High School</p>
+    <footer class="site-footer">
+      <p><span class="footer-mark" aria-hidden="true">M</span> Mergington High School</p>
+      <p>Uma comunidade para aprender e crescer.</p>
     </footer>
 
     <script src="app.js"></script>

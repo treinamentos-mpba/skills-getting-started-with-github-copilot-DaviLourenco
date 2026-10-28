@@ -5,12 +5,19 @@ A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, Field
 import os
 import re
 from pathlib import Path
+
+
+class Participant(BaseModel):
+    participantName: str = Field(..., min_length=1, max_length=50)
+    email: str
+
 
 EMAIL_PATTERN = re.compile(
     r"[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+"
@@ -33,19 +40,28 @@ activities = {
         "description": "Learn strategies and compete in chess tournaments",
         "schedule": "Fridays, 3:30 PM - 5:00 PM",
         "max_participants": 12,
-        "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
+        "participants": [
+            Participant(participantName="Michael", email="michael@mergington.edu"),
+            Participant(participantName="Daniel", email="daniel@mergington.edu"),
+        ]
     },
     "Programming Class": {
         "description": "Learn programming fundamentals and build software projects",
         "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
         "max_participants": 20,
-        "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
+        "participants": [
+            Participant(participantName="Emma", email="emma@mergington.edu"),
+            Participant(participantName="Sophia", email="sophia@mergington.edu"),
+        ]
     },
     "Gym Class": {
         "description": "Physical education and sports activities",
         "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
         "max_participants": 30,
-        "participants": ["john@mergington.edu", "olivia@mergington.edu"]
+        "participants": [
+            Participant(participantName="John", email="john@mergington.edu"),
+            Participant(participantName="Olivia", email="olivia@mergington.edu"),
+        ]
     },
     "Basketball Team": {
         "description": "Practice basketball skills and play team matches",
@@ -115,7 +131,11 @@ def get_activities():
 
 
 @app.post("/activities/{activity_name}/signup")
-def signup_for_activity(activity_name: str, email: str):
+def signup_for_activity(
+    activity_name: str,
+    email: str,
+    participantName: str = Query(..., min_length=1, max_length=50),
+):
     """Sign up a student for an activity"""
     # Validate activity exists
     if activity_name not in activities:
@@ -130,14 +150,19 @@ def signup_for_activity(activity_name: str, email: str):
         raise HTTPException(status_code=400, detail="Activity is full")
 
     # Validate student is not already signed up
-    if email in activities[activity_name]["participants"]:
+    if any(
+        participant.email == email
+        for participant in activities[activity_name]["participants"]
+    ):
         raise HTTPException(status_code=400, detail="Student already signed up for this activity")
 
     # Get the specific activity
     activity = activities[activity_name]
 
     # Add student
-    activity["participants"].append(email)
+    activity["participants"].append(
+        Participant(participantName=participantName, email=email)
+    )
     return {"message": f"Signed up {email} for {activity_name}"}
 
 
@@ -148,8 +173,12 @@ def remove_signup_from_activity(activity_name: str, email: str):
         raise HTTPException(status_code=404, detail="Activity not found")
 
     participants = activities[activity_name]["participants"]
-    if email not in participants:
+    participant = next(
+        (participant for participant in participants if participant.email == email),
+        None,
+    )
+    if participant is None:
         raise HTTPException(status_code=404, detail="Student is not signed up for this activity")
 
-    participants.remove(email)
+    participants.remove(participant)
     return {"message": f"Removed {email} from {activity_name}"}

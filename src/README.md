@@ -27,10 +27,11 @@ Uma aplicação FastAPI super simples que permite que estudantes visualizem e se
 
 ## Endpoints da API
 
-| Método | Endpoint                                                          | Descrição                                                                   |
-| ------ | ----------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| GET    | `/activities`                                                     | Obtém todas as atividades com seus detalhes e contagem atual de participantes |
-| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu` | Inscreve-se em uma atividade                                                |
+| Método | Endpoint                                                                                         | Descrição                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| GET    | `/activities`                                                                                   | Obtém atividades e participantes com nome e email                           |
+| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu&participantName=Ana`            | Inscreve um participante; `participantName` é obrigatório e aceita até 50 caracteres |
+| DELETE | `/activities/{activity_name}/signup?email=student@mergington.edu`                                | Remove uma inscrição pelo email                                              |
 
 ## Modelo de Dados
 
@@ -41,10 +42,10 @@ A aplicação usa um modelo de dados simples com identificadores significativos:
    - Descrição
    - Horário
    - Número máximo de participantes permitidos
-   - Lista de emails dos estudantes inscritos
+   - Lista de participantes inscritos, cada um com email e `participantName`
 
-2. **Students** - Usa email como identificador:
-   - Nome
-   - Série/Ano escolar
+2. **Participant** - Usa email como identificador:
+   - `participantName` obrigatório, com até 50 caracteres
+   - Email
 
 Todos os dados são armazenados em memória, o que significa que os dados serão resetados quando o servidor reiniciar.

@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         participantsHeading.className = "participants-heading";
 
         const participantsTitle = document.createElement("h5");
-        participantsTitle.textContent = "Participants";
+        participantsTitle.textContent = "Participantes";
 
         const participantsCount = document.createElement("span");
         participantsCount.className = "participant-count";
@@ -50,21 +50,21 @@ document.addEventListener("DOMContentLoaded", () => {
         if (details.participants.length === 0) {
           const emptyMessage = document.createElement("li");
           emptyMessage.className = "participants-empty";
-          emptyMessage.textContent = "No participants yet";
+          emptyMessage.textContent = "Nenhum participante ainda";
           participantsList.appendChild(emptyMessage);
         } else {
-          details.participants.forEach((email) => {
+          details.participants.forEach((participantData) => {
             const participant = document.createElement("li");
 
             const participantEmail = document.createElement("span");
             participantEmail.className = "participant-email";
-            participantEmail.textContent = email;
+            participantEmail.textContent = `${participantData.participantName} (${participantData.email})`;
 
             const removeButton = document.createElement("button");
             removeButton.type = "button";
             removeButton.className = "participant-remove";
-            removeButton.title = `Unregister ${email} from ${name}`;
-            removeButton.setAttribute("aria-label", `Unregister ${email} from ${name}`);
+            removeButton.title = `Remover inscrição de ${participantData.email} em ${name}`;
+            removeButton.setAttribute("aria-label", `Remover inscrição de ${participantData.email} em ${name}`);
             removeButton.innerHTML = `
               <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3" />
@@ -75,22 +75,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
               try {
                 const deleteResponse = await fetch(
-                  `/activities/${encodeURIComponent(name)}/signup?email=${encodeURIComponent(email)}`,
+                  `/activities/${encodeURIComponent(name)}/signup?${new URLSearchParams({ email: participantData.email })}`,
                   { method: "DELETE" }
                 );
                 const result = await deleteResponse.json();
 
                 if (!deleteResponse.ok) {
-                  throw new Error(result.detail || "Unable to unregister participant");
+                  throw new Error(result.detail || "Não foi possível remover a inscrição");
                 }
 
                 await fetchActivities();
                 messageDiv.textContent = result.message;
-                messageDiv.className = "success";
+                messageDiv.className = "message success";
               } catch (error) {
                 removeButton.disabled = false;
-                messageDiv.textContent = error.message || "Unable to unregister participant";
-                messageDiv.className = "error";
+                messageDiv.textContent = error.message || "Não foi possível remover a inscrição";
+                messageDiv.className = "message error";
               }
 
               messageDiv.classList.remove("hidden");
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       activitySelect.value = selectedActivity;
     } catch (error) {
-      activitiesList.innerHTML = "<p>Failed to load activities. Please try again later.</p>";
+      activitiesList.innerHTML = "<p>Não foi possível carregar as atividades. Tente novamente mais tarde.</p>";
       console.error("Error fetching activities:", error);
     }
   }
@@ -124,12 +124,13 @@ document.addEventListener("DOMContentLoaded", () => {
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const participantName = document.getElementById("participantName").value;
     const email = document.getElementById("email").value;
     const activity = document.getElementById("activity").value;
 
     try {
       const response = await fetch(
-        `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}`,
+        `/activities/${encodeURIComponent(activity)}/signup?${new URLSearchParams({ email, participantName })}`,
         {
           method: "POST",
         }
@@ -139,12 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (response.ok) {
         messageDiv.textContent = result.message;
-        messageDiv.className = "success";
+        messageDiv.className = "message success";
         signupForm.reset();
         await fetchActivities();
       } else {
-        messageDiv.textContent = result.detail || "An error occurred";
-        messageDiv.className = "error";
+        messageDiv.textContent = result.detail || "Ocorreu um erro";
+        messageDiv.className = "message error";
       }
 
       messageDiv.classList.remove("hidden");
@@ -154,8 +155,8 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.classList.add("hidden");
       }, 5000);
     } catch (error) {
-      messageDiv.textContent = "Failed to sign up. Please try again.";
-      messageDiv.className = "error";
+      messageDiv.textContent = "Não foi possível fazer a inscrição. Tente novamente.";
+      messageDiv.className = "message error";
       messageDiv.classList.remove("hidden");
       console.error("Error signing up:", error);
     }
